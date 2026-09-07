@@ -123,7 +123,7 @@ export default function LoginPage() {
           <div className="mt-8 text-center text-sm text-neutral-500">
             <p>Demo Credentials:</p>
             <p className="mt-1">Admin: admin@ppfcutting.com / adminppf@pass123</p>
-            <p>Installer: installer@tndevelopment.com / password123</p>
+            <p>Installer: user@ppfcutting.com / userppf@pass321</p>
           </div>
         </div>
       </div>

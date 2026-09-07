@@ -19,11 +19,11 @@ const sidebarLinks = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Vehicles', href: '/admin/vehicles', icon: Car },
   { name: 'Patterns', href: '/admin/patterns', icon: FileImage },
-  { name: 'Users', href: '/admin/users', icon: Users },
-  { name: 'Organizations', href: '/admin/organizations', icon: Building },
-  { name: 'Cutting Jobs', href: '/admin/jobs', icon: Scissors },
+  // { name: 'Users', href: '/admin/users', icon: Users },
+  // { name: 'Organizations', href: '/admin/organizations', icon: Building },
+  // { name: 'Cutting Jobs', href: '/admin/jobs', icon: Scissors },
   { name: 'Plotters', href: '/admin/plotters', icon: Monitor },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
+  // { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

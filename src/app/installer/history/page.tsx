@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Search, AlertCircle, CheckCircle2, Clock, Printer, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/api';
 
 interface Job {
   _id: string;
@@ -26,7 +27,7 @@ export default function InstallerHistoryPage() {
     if (!user?.token) return;
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:5000/api/jobs', {
+      const res = await fetch(`${API_URL}/jobs`, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       if (res.ok) {

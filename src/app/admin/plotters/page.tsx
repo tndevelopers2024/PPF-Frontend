@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/api';
 
 interface Plotter {
   _id: string;
@@ -69,7 +70,7 @@ export default function AdminPlottersPage() {
     if (!user?.token) return;
     try {
       setIsRefreshing(true);
-      const res = await fetch('http://localhost:5000/api/plotters', {
+      const res = await fetch(`${API_URL}/plotters`, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       if (res.ok) {
@@ -135,8 +136,8 @@ export default function AdminPlottersPage() {
       setFormError(null);
 
       const url = editingPlotter 
-        ? `http://localhost:5000/api/plotters/${editingPlotter._id}`
-        : 'http://localhost:5000/api/plotters';
+        ? `${API_URL}/plotters/${editingPlotter._id}`
+        : `${API_URL}/plotters`;
 
       const method = editingPlotter ? 'PUT' : 'POST';
 
@@ -169,7 +170,7 @@ export default function AdminPlottersPage() {
     if (!deletingPlotter || !user?.token) return;
     try {
       setIsDeleting(true);
-      const res = await fetch(`http://localhost:5000/api/plotters/${deletingPlotter._id}`, {
+      const res = await fetch(`${API_URL}/plotters/${deletingPlotter._id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${user.token}` },
       });
@@ -189,7 +190,7 @@ export default function AdminPlottersPage() {
     if (!user?.token) return;
     try {
       setTestingId(plotterId);
-      const res = await fetch(`http://localhost:5000/api/plotters/${plotterId}/test`, {
+      const res = await fetch(`${API_URL}/plotters/${plotterId}/test`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${user.token}` },
       });

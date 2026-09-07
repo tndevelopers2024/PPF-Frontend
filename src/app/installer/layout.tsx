@@ -25,7 +25,7 @@ export default function InstallerLayout({ children }: { children: React.ReactNod
     <ProtectedRoute allowedRoles={['INSTALLER', 'SUPER_ADMIN', 'ADMIN']}>
       <div className="flex min-h-screen bg-neutral-50 text-neutral-900">
         {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-neutral-200 flex flex-col">
+        <aside className="w-64 max-h-[100vh] bg-white border-r border-neutral-200 flex flex-col">
           <div className="h-16 flex items-center px-6 border-b border-neutral-200">
             <h1 className="text-xl font-bold bg-gradient-to-r from-teal-400 to-emerald-500 bg-clip-text text-transparent">
               PPF Studio

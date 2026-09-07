@@ -7,6 +7,7 @@ import { ArrowLeft, Scissors, Check, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useWorkspaceStore } from '@/store/workspaceStore';
+import { API_URL, getAssetUrl } from '@/lib/api';
 
 export default function VehicleDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -24,7 +25,7 @@ export default function VehicleDetailsPage({ params }: { params: Promise<{ id: s
     const fetchVehicle = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/vehicles/${id}`, {
+        const res = await fetch(`${API_URL}/vehicles/${id}`, {
           headers: { 'Authorization': `Bearer ${user?.token}` }
         });
         if (res.ok) {
@@ -45,7 +46,7 @@ export default function VehicleDetailsPage({ params }: { params: Promise<{ id: s
   useEffect(() => {
     if (!id || !user?.token) return;
     setPatternsLoading(true);
-    fetch(`http://localhost:5000/api/patterns?vehicleId=${id}`, {
+    fetch(`${API_URL}/patterns?vehicleId=${id}`, {
       headers: { 'Authorization': `Bearer ${user.token}` }
     })
       .then(r => r.ok ? r.json() : [])
@@ -180,7 +181,7 @@ export default function VehicleDetailsPage({ params }: { params: Promise<{ id: s
                 {group.patterns.map((pattern) => {
                   const isSelected = selectedPatterns.includes(pattern._id);
                   const svgPath = pattern.files?.svg?.url || (pattern.files?.dxf?.url ? `${pattern.files.dxf.url}.svg` : null);
-                  const previewUrl = svgPath ? `http://localhost:5000${svgPath}` : null;
+                  const previewUrl = getAssetUrl(svgPath);
                   const fileType = pattern.files?.dxf ? 'DXF' : (pattern.files?.svg ? 'SVG' : null);
                   return (
                     <div

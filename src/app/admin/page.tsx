@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
+import { API_URL } from '@/lib/api';
 
 interface DashboardStats {
   counts: {
@@ -58,7 +59,7 @@ export default function AdminDashboardPage() {
     if (!user?.token) return;
     try {
       setIsRefreshing(true);
-      const res = await fetch('http://localhost:5000/api/jobs/dashboard-stats', {
+      const res = await fetch(`${API_URL}/jobs/dashboard-stats`, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
       if (res.ok) {

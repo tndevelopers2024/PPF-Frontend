@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/api';
 
 interface Vehicle { 
   _id: string; 
@@ -81,7 +82,7 @@ export default function PatternsPage() {
     setIsLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:5000/api/patterns', {
+      const res = await fetch(`${API_URL}/patterns`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       if (res.ok) setPatterns(await res.json());
@@ -95,7 +96,7 @@ export default function PatternsPage() {
 
   const fetchVehicles = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/vehicles', {
+      const res = await fetch(`${API_URL}/vehicles`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       if (res.ok) setVehicles(await res.json());
@@ -133,7 +134,7 @@ export default function PatternsPage() {
   const uploadPatternFile = async (patternId: string, file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    const res = await fetch(`http://localhost:5000/api/patterns/${patternId}/upload`, {
+    const res = await fetch(`${API_URL}/patterns/${patternId}/upload`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${user?.token}` },
       body: formData,
@@ -150,7 +151,7 @@ export default function PatternsPage() {
     setIsSubmitting(true);
     setAddError('');
     try {
-      const res = await fetch('http://localhost:5000/api/patterns', {
+      const res = await fetch(`${API_URL}/patterns`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json', 
@@ -188,7 +189,7 @@ export default function PatternsPage() {
     setIsUpdating(true);
     setEditError('');
     try {
-      const res = await fetch(`http://localhost:5000/api/patterns/${editTarget._id}`, {
+      const res = await fetch(`${API_URL}/patterns/${editTarget._id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json', 
@@ -229,7 +230,7 @@ export default function PatternsPage() {
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/patterns/${deleteTarget._id}`, {
+      const res = await fetch(`${API_URL}/patterns/${deleteTarget._id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${user?.token}` }
       });

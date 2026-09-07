@@ -29,6 +29,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useWorkspaceStore } from '@/store/workspaceStore';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL, getAssetUrl } from '@/lib/api';
 
 export default function WorkspacePage() {
   const router = useRouter();
@@ -77,7 +78,7 @@ export default function WorkspacePage() {
   useEffect(() => {
     if (!showPlotterModal || !user?.token) return;
 
-    fetch('http://localhost:5000/api/plotters', {
+    fetch(`${API_URL}/plotters`, {
       headers: { Authorization: `Bearer ${user.token}` },
     })
       .then((r) => (r.ok ? r.json() : []))
@@ -90,7 +91,7 @@ export default function WorkspacePage() {
       })
       .catch((err) => console.warn('Failed to load plotters:', err));
 
-    fetch('http://localhost:5000/api/vehicles', {
+    fetch(`${API_URL}/vehicles`, {
       headers: { Authorization: `Bearer ${user.token}` },
     })
       .then((r) => (r.ok ? r.json() : []))
@@ -335,7 +336,7 @@ export default function WorkspacePage() {
 
       if (selectedPatternIds && selectedPatternIds.length > 0 && token) {
         const fetches = selectedPatternIds.map(id =>
-          fetch(`http://localhost:5000/api/patterns/${id}`, {
+          fetch(`${API_URL}/patterns/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           }).then(r => r.ok ? r.json() : null)
         );
@@ -344,7 +345,7 @@ export default function WorkspacePage() {
 
       if (patternsToLoad.length === 0 && token) {
         try {
-          const res = await fetch('http://localhost:5000/api/patterns', {
+          const res = await fetch(`${API_URL}/patterns`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.ok) {
@@ -367,9 +368,7 @@ export default function WorkspacePage() {
       let yOffset = 90;
       for (const p of patternsToLoad) {
         const svgPath = p.files?.svg?.url || (p.files?.dxf?.url ? `${p.files.dxf.url}.svg` : null);
-        const svgUrl = svgPath
-          ? (svgPath.startsWith('http') ? svgPath : `http://localhost:5000${svgPath}`)
-          : null;
+        const svgUrl = getAssetUrl(svgPath);
 
         if (svgUrl) {
           try {
@@ -566,7 +565,7 @@ export default function WorkspacePage() {
     const filmLeft = filmBg ? filmBg.left : 50;
 
     const svgPath = p.files?.svg?.url || (p.files?.dxf?.url ? `${p.files.dxf.url}.svg` : null);
-    const svgUrl = svgPath ? (svgPath.startsWith('http') ? svgPath : `http://localhost:5000${svgPath}`) : null;
+    const svgUrl = getAssetUrl(svgPath);
 
     let yPos = 90;
     const existingObjects = canvas.getObjects().filter((o: any) => o.id !== 'film-bg');
@@ -853,9 +852,7 @@ export default function WorkspacePage() {
                 ? `${vehicle.manufacturer} ${vehicle.model} (${vehicle.generation || vehicle.year})`
                 : 'Vehicle Pattern';
               const svgPath = p.files?.svg?.url || (p.files?.dxf?.url ? `${p.files.dxf.url}.svg` : null);
-              const svgThumb = svgPath
-                ? (svgPath.startsWith('http') ? svgPath : `http://localhost:5000${svgPath}`)
-                : null;
+              const svgThumb = getAssetUrl(svgPath);
               const fileType = p.files?.dxf ? 'DXF' : (p.files?.svg ? 'SVG' : null);
               const isPlaced = placedPatternIds.includes(p._id);
 
@@ -1250,7 +1247,7 @@ export default function WorkspacePage() {
                     try {
                       setIsSendingJob(true);
                       setJobError(null);
-                      const res = await fetch('http://localhost:5000/api/jobs', {
+                      const res = await fetch(`${API_URL}/jobs`, {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',

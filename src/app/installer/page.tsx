@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Search, Filter, CarFront } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/api';
 
 interface Vehicle {
   _id: string;
@@ -31,10 +32,10 @@ export default function InstallerSearchPage() {
       try {
         // Fetch vehicles and patterns in parallel
         const [vehiclesRes, patternsRes] = await Promise.all([
-          fetch('http://localhost:5000/api/vehicles', {
+          fetch(`${API_URL}/vehicles`, {
             headers: { 'Authorization': `Bearer ${user?.token}` }
           }),
-          fetch('http://localhost:5000/api/patterns', {
+          fetch(`${API_URL}/patterns`, {
             headers: { 'Authorization': `Bearer ${user?.token}` }
           })
         ]);

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, User } from '@/context/AuthContext';
 import { ShieldAlert } from 'lucide-react';
+import { API_URL } from '@/lib/api';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -33,8 +34,7 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // NOTE: Update this URL to match your backend if deployed elsewhere
-      const res = await fetch('http://localhost:5000/api/auth/login', {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

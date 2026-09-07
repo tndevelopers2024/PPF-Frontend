@@ -7,6 +7,7 @@ import { Search, FileEdit, Trash, AlertTriangle, X, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AddVehicleModal from '@/components/AddVehicleModal';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/api';
 
 interface Vehicle {
   _id: string;
@@ -42,7 +43,7 @@ export default function VehiclesPage() {
     setIsLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:5000/api/vehicles', {
+      const res = await fetch(`${API_URL}/vehicles`, {
         headers: { 'Authorization': `Bearer ${user?.token}` }
       });
       if (res.ok) {
@@ -81,7 +82,7 @@ export default function VehiclesPage() {
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/vehicles/${deleteTarget._id}`, {
+      const res = await fetch(`${API_URL}/vehicles/${deleteTarget._id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${user?.token}` }
       });
@@ -104,7 +105,7 @@ export default function VehiclesPage() {
     setIsUpdating(true);
     setEditError('');
     try {
-      const res = await fetch(`http://localhost:5000/api/vehicles/${editTarget._id}`, {
+      const res = await fetch(`${API_URL}/vehicles/${editTarget._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

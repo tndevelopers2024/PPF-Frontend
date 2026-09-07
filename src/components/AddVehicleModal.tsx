@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/api';
 
 interface AddVehicleModalProps {
   onSuccess: () => void;
@@ -54,7 +55,7 @@ export default function AddVehicleModal({ onSuccess }: AddVehicleModalProps) {
     setIsSubmitting(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:5000/api/vehicles', {
+      const res = await fetch(`${API_URL}/vehicles`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

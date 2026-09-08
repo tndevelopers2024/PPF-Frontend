@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, Filter, CarFront } from 'lucide-react';
+import { Search, Filter, CarFront, X, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { API_URL } from '@/lib/api';
@@ -19,6 +19,8 @@ interface Vehicle {
 
 export default function InstallerSearchPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedMake, setSelectedMake] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [patternCounts, setPatternCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -67,11 +69,44 @@ export default function InstallerSearchPage() {
     if (user?.token) fetchData();
   }, [user]);
 
-  const filteredVehicles = vehicles.filter(v =>
-    `${v.manufacturer} ${v.model} ${v.year} ${v.generation ?? ''} ${v.variant ?? ''}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
+  const makes = useMemo(() => {
+    return Array.from(
+      new Set(
+        vehicles
+          .map((v) => v.manufacturer?.trim())
+          .filter((m): m is string => Boolean(m))
+      )
+    ).sort((a, b) => a.localeCompare(b));
+  }, [vehicles]);
+
+  const years = useMemo(() => {
+    return Array.from(
+      new Set(vehicles.map((v) => v.year).filter(Boolean))
+    ).sort((a, b) => b - a);
+  }, [vehicles]);
+
+  const filteredVehicles = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    return vehicles.filter((v) => {
+      const matchesSearch = !term ||
+        `${v.manufacturer} ${v.model} ${v.year} ${v.generation ?? ''} ${v.variant ?? ''}`
+          .toLowerCase()
+          .includes(term);
+
+      const matchesMake = !selectedMake || v.manufacturer?.toLowerCase() === selectedMake.toLowerCase();
+      const matchesYear = !selectedYear || String(v.year) === selectedYear;
+
+      return matchesSearch && matchesMake && matchesYear;
+    });
+  }, [vehicles, searchTerm, selectedMake, selectedYear]);
+
+  const hasActiveFilters = Boolean(searchTerm || selectedMake || selectedYear);
+
+  const resetFilters = () => {
+    setSearchTerm('');
+    setSelectedMake('');
+    setSelectedYear('');
+  };
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-10">
@@ -94,7 +129,17 @@ export default function InstallerSearchPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <div className="absolute inset-y-2 right-2">
+          <div className="absolute inset-y-2 right-2 flex items-center gap-1">
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="p-2 text-neutral-400 hover:text-neutral-600 rounded-full hover:bg-neutral-100 transition-colors"
+                title="Clear search"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
             <Button className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-6 h-full">
               Search
             </Button>
@@ -103,22 +148,40 @@ export default function InstallerSearchPage() {
 
         {/* Filters bar */}
         <div className="flex items-center gap-3 mt-6 flex-wrap justify-center">
-          <select className="bg-white border border-neutral-200 text-neutral-700 rounded-full px-6 py-2.5 text-sm focus:outline-none hover:bg-neutral-50 cursor-pointer shadow-sm focus:ring-2 focus:ring-teal-500">
-            <option>Make</option>
-            {[...new Set(vehicles.map(v => v.manufacturer))].map(m => (
-              <option key={m}>{m}</option>
+          <select
+            aria-label="Filter by make"
+            className="bg-white border border-neutral-200 text-neutral-700 rounded-full px-6 py-2.5 text-sm focus:outline-none hover:bg-neutral-50 cursor-pointer shadow-sm focus:ring-2 focus:ring-teal-500"
+            value={selectedMake}
+            onChange={(e) => setSelectedMake(e.target.value)}
+          >
+            <option value="">All Makes</option>
+            {makes.map((m) => (
+              <option key={m} value={m}>{m}</option>
             ))}
           </select>
-          <select className="bg-white border border-neutral-200 text-neutral-700 rounded-full px-6 py-2.5 text-sm focus:outline-none hover:bg-neutral-50 cursor-pointer shadow-sm focus:ring-2 focus:ring-teal-500">
-            <option>Year</option>
-            {[...new Set(vehicles.map(v => v.year))].sort((a, b) => b - a).map(y => (
-              <option key={y}>{y}</option>
+          <select
+            aria-label="Filter by year"
+            className="bg-white border border-neutral-200 text-neutral-700 rounded-full px-6 py-2.5 text-sm focus:outline-none hover:bg-neutral-50 cursor-pointer shadow-sm focus:ring-2 focus:ring-teal-500"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+          >
+            <option value="">All Years</option>
+            {years.map((y) => (
+              <option key={y} value={String(y)}>{y}</option>
             ))}
           </select>
-          <Button variant="outline" className="rounded-full border-neutral-200 text-neutral-600 gap-2 hover:bg-neutral-50 shadow-sm">
-            <Filter className="w-4 h-4" />
-            More Filters
-          </Button>
+
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              onClick={resetFilters}
+              className="rounded-full border-neutral-200 text-neutral-600 gap-2 hover:bg-neutral-50 shadow-sm"
+              title="Reset all filters"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset Filters
+            </Button>
+          )}
         </div>
       </div>
 
@@ -144,7 +207,22 @@ export default function InstallerSearchPage() {
           </div>
         ) : filteredVehicles.length === 0 ? (
           <div className="text-center py-20 text-neutral-400">
-            {searchTerm ? `No vehicles found for "${searchTerm}".` : 'No active vehicles available.'}
+            {hasActiveFilters ? (
+              <div className="space-y-3">
+                <p>No vehicles match your search or filter criteria.</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="rounded-full border-neutral-300 text-xs"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                  Clear all filters
+                </Button>
+              </div>
+            ) : (
+              'No active vehicles available.'
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useForm } from 'react-hook-form';
-import { Search, FileEdit, Trash, AlertTriangle, X, Save } from 'lucide-react';
+import { Search, FileEdit, Trash, AlertTriangle, X, Save, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AddVehicleModal from '@/components/AddVehicleModal';
 import { useAuth } from '@/context/AuthContext';
@@ -22,6 +22,8 @@ interface Vehicle {
 
 export default function VehiclesPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedManufacturer, setSelectedManufacturer] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -128,11 +130,48 @@ export default function VehiclesPage() {
     }
   };
 
-  const filteredVehicles = vehicles.filter(v =>
-    v.manufacturer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.generation?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Dynamically extract unique manufacturers from the vehicle list
+  const manufacturers = useMemo(() => {
+    return Array.from(
+      new Set(
+        vehicles
+          .map((v) => v.manufacturer?.trim())
+          .filter((m): m is string => Boolean(m))
+      )
+    ).sort((a, b) => a.localeCompare(b));
+  }, [vehicles]);
+
+  const filteredVehicles = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    return vehicles.filter((v) => {
+      const matchesSearch = !term || (
+        v.manufacturer?.toLowerCase().includes(term) ||
+        v.model?.toLowerCase().includes(term) ||
+        v.generation?.toLowerCase().includes(term) ||
+        v.variant?.toLowerCase().includes(term) ||
+        v.bodyType?.toLowerCase().includes(term) ||
+        String(v.year).includes(term) ||
+        `${v.manufacturer} ${v.model}`.toLowerCase().includes(term) ||
+        `${v.manufacturer} ${v.model} ${v.year}`.toLowerCase().includes(term)
+      );
+
+      const matchesManufacturer = !selectedManufacturer ||
+        v.manufacturer?.toLowerCase() === selectedManufacturer.toLowerCase();
+
+      const matchesStatus = !selectedStatus ||
+        v.status?.toLowerCase() === selectedStatus.toLowerCase();
+
+      return matchesSearch && matchesManufacturer && matchesStatus;
+    });
+  }, [vehicles, searchTerm, selectedManufacturer, selectedStatus]);
+
+  const hasActiveFilters = Boolean(searchTerm || selectedManufacturer || selectedStatus);
+
+  const resetFilters = () => {
+    setSearchTerm('');
+    setSelectedManufacturer('');
+    setSelectedStatus('');
+  };
 
   const inputClass = "w-full bg-white border border-neutral-300 rounded-lg px-4 py-2.5 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500";
   const labelClass = "text-sm font-medium text-neutral-700";
@@ -291,30 +330,84 @@ export default function VehiclesPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-4 rounded-xl border border-neutral-200 shadow-sm">
-        <div className="relative flex-1 w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
-          <input
-            type="text"
-            placeholder="Search vehicles..."
-            className="w-full bg-neutral-50 border border-neutral-200 rounded-lg pl-10 pr-4 py-2 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-neutral-200 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center gap-3 flex-1">
+          <div className="relative w-full sm:max-w-xs md:max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search vehicles..."
+              className="w-full bg-neutral-50 border border-neutral-200 rounded-lg pl-10 pr-8 py-2 text-sm text-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 p-0.5 rounded-full hover:bg-neutral-200 transition-colors"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            <select
+              aria-label="Filter by manufacturer"
+              className="bg-white border border-neutral-200 text-neutral-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              value={selectedManufacturer}
+              onChange={(e) => setSelectedManufacturer(e.target.value)}
+            >
+              <option value="">All Manufacturers</option>
+              {manufacturers.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+            <select
+              aria-label="Filter by status"
+              className="bg-white border border-neutral-200 text-neutral-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+            >
+              <option value="">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="draft">Draft</option>
+              <option value="inactive">Inactive</option>
+            </select>
+
+            {hasActiveFilters && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={resetFilters}
+                className="text-xs text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 whitespace-nowrap h-9 px-2.5"
+                title="Reset all filters"
+              >
+                <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                Reset
+              </Button>
+            )}
+          </div>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <select className="bg-white border border-neutral-200 text-neutral-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option>All Manufacturers</option>
-            <option>BMW</option>
-            <option>Porsche</option>
-            <option>Tesla</option>
-          </select>
-          <select className="bg-white border border-neutral-200 text-neutral-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option>All Statuses</option>
-            <option>Active</option>
-            <option>Draft</option>
-          </select>
-        </div>
+
+        {!isLoading && (
+          <div className="text-xs text-neutral-500 self-end sm:self-center shrink-0">
+            {hasActiveFilters ? (
+              <span>
+                Showing <strong className="text-neutral-800">{filteredVehicles.length}</strong> of{' '}
+                <strong className="text-neutral-800">{vehicles.length}</strong>
+              </span>
+            ) : (
+              <span>
+                Total: <strong className="text-neutral-800">{vehicles.length}</strong>
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {error && (
@@ -346,8 +439,23 @@ export default function VehiclesPage() {
                 </tr>
               ) : filteredVehicles.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-neutral-400">
-                    No vehicles found. Click "Add Vehicle" to create one.
+                  <td colSpan={6} className="px-6 py-12 text-center text-neutral-500">
+                    {hasActiveFilters ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <p className="text-sm">No vehicles match your search or filter criteria.</p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={resetFilters}
+                          className="mt-1 text-xs border-neutral-300"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                          Clear filters
+                        </Button>
+                      </div>
+                    ) : (
+                      'No vehicles found. Click "Add Vehicle" to create one.'
+                    )}
                   </td>
                 </tr>
               ) : filteredVehicles.map((v) => (

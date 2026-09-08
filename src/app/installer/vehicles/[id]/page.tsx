@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Scissors, Check, Info } from 'lucide-react';
+import { ArrowLeft, Scissors, Check, Info, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { useWorkspaceStore } from '@/store/workspaceStore';
@@ -19,6 +19,8 @@ export default function VehicleDetailsPage({ params }: { params: Promise<{ id: s
   const [isLoading, setIsLoading] = useState(true);
   const [patternsLoading, setPatternsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [inGarage, setInGarage] = useState(false);
+  const [isAddingToGarage, setIsAddingToGarage] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -64,6 +66,42 @@ export default function VehicleDetailsPage({ params }: { params: Promise<{ id: s
       .finally(() => setPatternsLoading(false));
   }, [id, user]);
 
+  useEffect(() => {
+    if (user?.token && id) {
+      fetch(`${API_URL}/garage/check/${id}`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      })
+        .then((r) => (r.ok ? r.json() : { inGarage: false }))
+        .then((data) => setInGarage(Boolean(data.inGarage)))
+        .catch(() => {});
+    }
+  }, [id, user]);
+
+  const handleAddToGarage = async () => {
+    if (!user?.token || !id) return;
+    setIsAddingToGarage(true);
+    try {
+      const res = await fetch(`${API_URL}/garage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({
+          vehicleId: id,
+          selectedPackage: 'Full Front PPF',
+          status: 'in_shop',
+        }),
+      });
+      if (res.ok) {
+        setInGarage(true);
+      }
+    } catch {
+    } finally {
+      setIsAddingToGarage(false);
+    }
+  };
+
   const togglePattern = (id: string) => {
     setSelectedPatterns(prev =>
       prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
@@ -107,21 +145,46 @@ export default function VehicleDetailsPage({ params }: { params: Promise<{ id: s
               )}
             </h1>
           </div>
-          {selectedPatterns.length > 0 && (
-            <div className="flex items-center gap-4 bg-teal-50 border border-teal-200 px-6 py-3 rounded-full">
-              <span className="text-teal-700 font-medium">{selectedPatterns.length} Patterns Selected</span>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            {inGarage ? (
+              <Link href="/installer/garage">
+                <Button
+                  variant="outline"
+                  className="border-teal-200 text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-full gap-2 text-xs h-10 px-4 shadow-2xs"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  In My Garage
+                </Button>
+              </Link>
+            ) : (
               <Button
-                className="bg-teal-600 hover:bg-teal-700 text-white rounded-full"
-                onClick={() => {
-                  setQueuedPatterns(selectedPatterns, id);
-                  router.push('/workspace');
-                }}
+                variant="outline"
+                onClick={handleAddToGarage}
+                disabled={isAddingToGarage}
+                className="border-neutral-200 text-neutral-700 hover:bg-neutral-50 rounded-full gap-2 text-xs h-10 px-4 shadow-2xs"
               >
-                <Scissors className="w-4 h-4 mr-2" />
-                Send to Cut Workspace
+                <Car className="w-3.5 h-3.5 text-neutral-500" />
+                {isAddingToGarage ? 'Adding...' : 'Add to Garage'}
               </Button>
-            </div>
-          )}
+            )}
+
+            {selectedPatterns.length > 0 && (
+              <div className="flex items-center gap-3 bg-teal-50 border border-teal-200 px-4 py-1.5 rounded-full">
+                <span className="text-teal-700 font-medium text-xs">{selectedPatterns.length} Patterns Selected</span>
+                <Button
+                  className="bg-teal-600 hover:bg-teal-700 text-white rounded-full text-xs h-8 px-3"
+                  onClick={() => {
+                    setQueuedPatterns(selectedPatterns, id);
+                    router.push('/workspace');
+                  }}
+                >
+                  <Scissors className="w-3.5 h-3.5 mr-1.5" />
+                  Send to Cut Workspace
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

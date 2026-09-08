@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Car, 
@@ -21,13 +22,14 @@ const sidebarLinks = [
   { name: 'Patterns', href: '/admin/patterns', icon: FileImage },
   // { name: 'Users', href: '/admin/users', icon: Users },
   // { name: 'Organizations', href: '/admin/organizations', icon: Building },
-  // { name: 'Cutting Jobs', href: '/admin/jobs', icon: Scissors },
+  { name: 'Cutting Jobs', href: '/admin/jobs', icon: Scissors },
   { name: 'Plotters', href: '/admin/plotters', icon: Monitor },
-  // { name: 'Settings', href: '/admin/settings', icon: Settings },
+  { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
 
   return (
     <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
@@ -43,14 +45,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-1">
             {sidebarLinks.map((link) => {
               const Icon = link.icon;
+              const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-neutral-100 text-neutral-600 hover:text-neutral-900 transition-colors"
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                    isActive
+                      ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-100 shadow-2xs'
+                      : 'hover:bg-neutral-100 text-neutral-600 hover:text-neutral-900'
+                  }`}
                 >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium text-sm">{link.name}</span>
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-neutral-400'}`} />
+                  <span className="text-sm">{link.name}</span>
                 </Link>
               );
             })}

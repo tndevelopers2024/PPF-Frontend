@@ -849,7 +849,7 @@ export default function WorkspacePage() {
             ) : queuedPatterns.map((p) => {
               const vehicle = typeof p.vehicleId === 'object' ? p.vehicleId : null;
               const vehicleLabel = vehicle
-                ? `${vehicle.manufacturer} ${vehicle.model} (${vehicle.generation || vehicle.year})`
+                ? `${vehicle.manufacturer} ${vehicle.model} (${vehicle.variant || vehicle.year})`
                 : 'Vehicle Pattern';
               const svgPath = p.files?.svg?.url || (p.files?.dxf?.url ? `${p.files.dxf.url}.svg` : null);
               const svgThumb = getAssetUrl(svgPath);
@@ -1165,7 +1165,7 @@ export default function WorkspacePage() {
                       >
                         {availableVehicles.map((v: any) => (
                           <option key={v._id} value={v._id}>
-                            {v.year} {v.manufacturer} {v.model} {[v.generation, v.variant].filter(Boolean).join(' ')}
+                            {v.year} {v.manufacturer} {v.model} {v.variant ? `(${v.variant})` : ''}
                           </option>
                         ))}
                       </select>

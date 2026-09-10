@@ -138,9 +138,9 @@ export default function VehicleDetailsPage({ params }: { params: Promise<{ id: s
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-neutral-900 flex flex-wrap items-center gap-3">
               {vehicle.year} {vehicle.manufacturer} {vehicle.model}
-              {(vehicle.generation || vehicle.variant) && (
+              {vehicle.variant && (
                 <span className="text-base font-normal text-neutral-500 bg-neutral-100 px-3 py-1 rounded-full border border-neutral-200">
-                  {[vehicle.generation, vehicle.variant].filter(Boolean).join(' • ')}
+                  {vehicle.variant}
                 </span>
               )}
             </h1>
@@ -209,10 +209,9 @@ export default function VehicleDetailsPage({ params }: { params: Promise<{ id: s
                 {[
                   { label: 'Manufacturer', value: vehicle.manufacturer },
                   { label: 'Model', value: vehicle.model },
-                  { label: 'Year', value: vehicle.year },
-                  { label: 'Generation', value: vehicle.generation || '-' },
                   { label: 'Variant', value: vehicle.variant || '-' },
-                  { label: 'Body Type', value: vehicle.bodyType || '-' },
+                  { label: 'Category', value: vehicle.category || 'Exterior Of Car' },
+                  { label: 'Year', value: vehicle.year },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex justify-between border-b border-neutral-100 pb-2 last:border-0 last:pb-0">
                     <span className="text-neutral-500">{label}</span>

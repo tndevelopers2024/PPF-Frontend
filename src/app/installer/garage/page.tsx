@@ -32,10 +32,8 @@ interface Vehicle {
   _id: string;
   manufacturer: string;
   model: string;
-  generation?: string;
   year: number;
   variant?: string;
-  bodyType?: string;
   image?: string;
   status: string;
 }
@@ -303,7 +301,7 @@ export default function InstallerGaragePage() {
     return garageItems.filter((item) => {
       const v = item.vehicleId;
       const vehicleText = v
-        ? `${v.manufacturer} ${v.model} ${v.year} ${v.generation || ''} ${v.variant || ''}`
+        ? `${v.manufacturer} ${v.model} ${v.year} ${v.variant || ''}`
         : '';
 
       const matchesSearch =
@@ -620,9 +618,9 @@ export default function InstallerGaragePage() {
                     <h3 className="text-xl font-bold text-neutral-900 group-hover:text-teal-700 transition-colors">
                       {v ? `${v.year} ${v.manufacturer} ${v.model}` : 'Unknown Vehicle'}
                     </h3>
-                    {v && (v.generation || v.variant || v.bodyType) && (
+                    {v && v.variant && (
                       <p className="text-xs text-neutral-500 mt-1 font-medium">
-                        {[v.generation, v.variant, v.bodyType].filter(Boolean).join(' • ')}
+                        {v.variant}
                       </p>
                     )}
                   </div>
@@ -755,7 +753,7 @@ export default function InstallerGaragePage() {
                     {catalogVehicles.map((v) => (
                       <option key={v._id} value={v._id}>
                         {v.year} {v.manufacturer} {v.model}{' '}
-                        {v.generation ? `(${v.generation})` : ''}
+                        {v.variant ? `(${v.variant})` : ''}
                       </option>
                     ))}
                   </select>
